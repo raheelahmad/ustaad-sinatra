@@ -39,7 +39,22 @@ class App < Sinatra::Application
   delete "/cards/:id" do
     content_type :json
 
+    card = card_from_params(params)
+    if card.nil?
+      puts "Could not find id #{id_to_delete}"
+      halt 400
+    else
+      front = card.front
+      cards = settings.cards
+      cards.delete card
+      message = { "message" => "Deleted: #{front}" }
+      message.to_json
+    end
+  end
+
+  def card_from_params(params)
     cards = settings.cards
+
     unless params["id"].nil?
       id_to_delete = params["id"].to_i
       match = cards.select {|card| card.id == id_to_delete }
@@ -47,15 +62,12 @@ class App < Sinatra::Application
         puts "Could not find id #{id_to_delete}"
         halt 400
       else
-        card = match.first
-        front = card.front
-        cards.delete card
-        message = { "message" => "Deleted: #{front}" }
-        message.to_json
+        match.first
       end
     else
       puts "Did not provide id"
       halt 400
     end
+
   end
 end
