@@ -29,6 +29,17 @@ class App < Sinatra::Application
     end
   end
 
+  put '/cards/:id' do
+    content_type :json
+    card = card_from_params(params)
+    if card.nil?
+      halt 400, { "message" => "Could not find card #{params['id']}" }
+    else
+      card.update params
+      card.to_json
+    end
+  end
+
   post '/cards' do
     content_type :json
 
