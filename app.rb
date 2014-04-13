@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'sinatra'
+require 'sinatra/reloader'
 require 'json'
 
 require './models/card.rb'
@@ -10,17 +11,16 @@ class App < Sinatra::Application
     raw_card = { "id" => 0, "front" => "What is the capital of India?", "back" => "New Delhi" }
     card = Card.new(raw_card)
     set :cards, [card]
+    register Sinatra::Reloader
   end
 
   get '/cards' do
     # return all in-memory cards
-    content_type :json
     cards = settings.cards
     cards.to_json
   end
 
   get '/cards/:id' do
-    content_type :json
     card = card_from_params(params)
     if card.nil?
       halt 400, { "message" => "Could not find card #{params['id']}" }
@@ -30,7 +30,6 @@ class App < Sinatra::Application
   end
 
   put '/cards/:id' do
-    content_type :json
     card = card_from_params(params)
     if card.nil?
       halt 400, { "message" => "Could not find card #{params['id']}" }
@@ -41,8 +40,6 @@ class App < Sinatra::Application
   end
 
   post '/cards' do
-    content_type :json
-
     # add a card read from body
     cards = settings.cards
     request.body.rewind
@@ -58,8 +55,6 @@ class App < Sinatra::Application
 
   # remember that DELETE does not receive a body
   delete "/cards/:id" do
-    content_type :json
-
     card = card_from_params(params)
     if card.nil?
       puts "Could not find id #{id_to_delete}"
