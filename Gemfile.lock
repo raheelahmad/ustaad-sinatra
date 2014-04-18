@@ -8,6 +8,7 @@ GEM
     rack-protection (1.5.3)
       rack
     rake (10.2.2)
+    sequel (4.9.0)
     sinatra (1.4.5)
       rack (~> 1.4)
       rack-protection (~> 1.4)
@@ -21,4 +22,5 @@ DEPENDENCIES
   json
   puma
   rake
+  sequel
   sinatra

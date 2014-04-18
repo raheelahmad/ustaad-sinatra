@@ -1,6 +1,7 @@
 require 'json'
+require 'sequel'
 
-class Card
+class Card < Sequel::Model
   attr_accessor :id, :front, :back, :title
 
   def initialize(params)

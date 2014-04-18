@@ -1,3 +1,4 @@
+require './db/config'
 require './app'
 require "./lib/content_type"
 
