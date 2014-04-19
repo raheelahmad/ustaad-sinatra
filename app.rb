@@ -8,82 +8,60 @@ require './models/card.rb'
 class App < Sinatra::Application
   configure do
     # start with a single card
-    raw_card = { "id" => 0, "front" => "What is the capital of India?", "back" => "New Delhi" }
-    card = Card.new(raw_card)
-    set :cards, [card]
     register Sinatra::Reloader
   end
 
   get '/cards' do
     # return all in-memory cards
-    cards = settings.cards
+    cards = Card.all
     cards.to_json
   end
 
   get '/cards/:id' do
-    card = card_from_params(params)
+    card = Card.find id: params[:id]
     if card.nil?
-      halt 400, { "message" => "Could not find card #{params['id']}" }
+      halt 400, { message: "Could not find card #{params['id']}" }.to_json
     else
       card.to_json
     end
   end
 
   put '/cards/:id' do
-    card = card_from_params(params)
+    card = Card.find id: params[:id]
     if card.nil?
       halt 400, { "message" => "Could not find card #{params['id']}" }
     else
-      card.update params
+      card.update JSON.parse(request.body.read)
+      card.save
       card.to_json
     end
   end
 
   post '/cards' do
     # add a card read from body
-    cards = settings.cards
     request.body.rewind
     raw_card = JSON.parse(request.body.read)
-    raw_card["id"] = cards.length
     card = Card.new raw_card
 
-    # add to in-memory array
-    cards << card
+    # TODO validation and error handling
+    card.save
+
     message = { "message" => "Card created", "card" => card }
     message.to_json
   end
 
   # remember that DELETE does not receive a body
   delete "/cards/:id" do
-    card = card_from_params(params)
+    card = Card.find id: params[:id]
     if card.nil?
       puts "Could not find id #{id_to_delete}"
-      halt 400
+      halt 400, { "message" => "Could not find card with id #{params[:id]}" }.to_json
     else
       front = card.front
-      cards = settings.cards
-      cards.delete card
+      card.delete
       message = { "message" => "Deleted: #{front}" }
       message.to_json
     end
   end
 
-  def card_from_params(params)
-    cards = settings.cards
-
-    unless params["id"].nil?
-      id_to_delete = params["id"].to_i
-      match = cards.select {|card| card.id == id_to_delete }
-      if match.nil? || match.length == 0
-        puts "Could not find id #{id_to_delete}"
-        halt 400
-      else
-        match.first
-      end
-    else
-      puts "Did not provide id"
-      halt 400
-    end
-
-  end
 end
